@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
-@Entity()
+@Entity({ name: 'notes' })
 export class Note {
   @PrimaryGeneratedColumn()
   id: number;
@@ -13,7 +13,7 @@ export class Note {
   note: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  is_active: boolean;
 
   @ManyToOne((type) => User, (user) => user.notes)
   user: User;

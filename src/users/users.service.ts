@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,25 +19,52 @@ export class UsersService {
     private usersRepository: Repository<User>,
     private readonly configService: ConfigService,
   ) {
-    const hashSecret = this.configService.get<string>('HASH_SECRET');
-    this.hashSecret = parseInt(hashSecret);
+    const hashSecret = +this.configService.get<string>('HASH_SECRET');
+    this.hashSecret = hashSecret;
   }
 
-  async create(createUserDto: CreateUserDto) {
-    const hashPassword = await bcrypt.hash(
-      createUserDto.password,
-      this.hashSecret,
-    );
-    createUserDto.password = hashPassword;
-    return this.usersRepository.save(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        this.hashSecret,
+      );
+      createUserDto.password = hashedPassword;
+      const user = this.usersRepository.create(createUserDto);
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      throw new ConflictException({
+        message: 'Username has exist',
+        errorMessage: error,
+      });
+    }
   }
 
   findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    try {
+      return this.usersRepository.find();
+    } catch (error) {
+      throw new NotFoundException({
+        message: 'User not found',
+        errorMessage: error,
+      });
+    }
+  }
+
+  async findOneUser(username: string): Promise<User | undefined> {
+    const user = await this.usersRepository.findOne({ where: { username } });
+    return user;
   }
 
   findOne(id: number): Promise<User> {
-    return this.usersRepository.findOneBy({ id });
+    try {
+      return this.usersRepository.findOneBy({ id: id });
+    } catch (error) {
+      throw new NotFoundException({
+        message: 'User not found',
+        errorMessage: error,
+      });
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

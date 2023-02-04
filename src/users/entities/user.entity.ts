@@ -1,25 +1,38 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
 import { Note } from '../../notes/entities/note.entity';
 
-@Entity()
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()
   password: string;
 
   @Column()
-  firstName: string;
+  first_name: string;
 
   @Column()
-  lastName: string;
+  last_name: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  is_active: boolean;
+
+  @CreateDateColumn({
+    nullable: false,
+    default: () => 'DATE_ADD(NOW(), INTERVAL 2 HOUR)',
+    type: 'timestamp',
+  })
+  create_at: Date;
 
   @OneToMany((type) => Note, (note) => note.user)
   notes: Note[];
