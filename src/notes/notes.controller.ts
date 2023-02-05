@@ -18,27 +18,27 @@ import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guards';
 import { NotesTransformInterceptor } from './interceptors/notes.interceptor';
 
 @UseGuards(JwtAuthGuard)
-@Controller('notes')
+@Controller()
 export class NotesController {
   constructor(private readonly notesService: NotesService) {}
 
   @UseInterceptors(NotesTransformInterceptor)
-  @Post()
+  @Post('note')
   create(@Body() createNoteDto: CreateNoteDto, @Request() { user }: any) {
     return this.notesService.create(createNoteDto, user);
   }
 
-  @Get()
+  @Get('notes')
   findAll(@Request() { user }: any) {
     return this.notesService.findAll(user);
   }
 
-  @Get(':id')
+  @Get('note/:id')
   findOne(@Param('id') id: string, @Request() { user }: any) {
     return this.notesService.findOne(+id, user);
   }
 
-  @Patch(':id/update')
+  @Patch('note/:id/update')
   update(
     @Param('id') id: string,
     @Body() updateNoteDto: UpdateNoteDto,
@@ -47,7 +47,7 @@ export class NotesController {
     return this.notesService.update(+id, updateNoteDto, user);
   }
 
-  @Delete(':id/delete')
+  @Delete('note/:id/delete')
   remove(@Param('id') id: string, @Request() { user }: any) {
     return this.notesService.remove(+id, user);
   }
