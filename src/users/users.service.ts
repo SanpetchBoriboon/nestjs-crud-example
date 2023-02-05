@@ -33,10 +33,7 @@ export class UsersService {
       const user = this.usersRepository.create(createUserDto);
       return await this.usersRepository.save(user);
     } catch (error) {
-      throw new ConflictException({
-        message: 'Username has exist',
-        errorMessage: error,
-      });
+      throw new ConflictException();
     }
   }
 
@@ -44,10 +41,7 @@ export class UsersService {
     try {
       return this.usersRepository.find();
     } catch (error) {
-      throw new NotFoundException({
-        message: 'User not found',
-        errorMessage: error,
-      });
+      throw new NotFoundException();
     }
   }
 
@@ -60,25 +54,30 @@ export class UsersService {
     try {
       return this.usersRepository.findOneBy({ id: id });
     } catch (error) {
-      throw new NotFoundException({
-        message: 'User not found',
-        errorMessage: error,
-      });
+      throw new NotFoundException();
     }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    if (updateUserDto.password) {
-      const hashPassword = await bcrypt.hash(
-        updateUserDto.password,
-        this.hashSecret,
-      );
-      updateUserDto.password = hashPassword;
+    try {
+      if (updateUserDto.password) {
+        const hashPassword = await bcrypt.hash(
+          updateUserDto.password,
+          this.hashSecret,
+        );
+        updateUserDto.password = hashPassword;
+      }
+      return this.usersRepository.update(id, updateUserDto);
+    } catch (error) {
+      throw new ConflictException();
     }
-    return this.usersRepository.update(id, updateUserDto);
   }
 
   async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
+    try {
+      await this.usersRepository.delete(id);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 }

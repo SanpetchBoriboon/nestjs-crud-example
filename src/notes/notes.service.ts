@@ -23,7 +23,7 @@ export class NotesService {
       const note = this.notesRepository.create({ ...createNoteDto, user });
       return await this.notesRepository.save(note);
     } catch (error) {
-      throw new ConflictException({ message: error });
+      throw new ConflictException();
     }
   }
 
